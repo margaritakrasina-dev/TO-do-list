@@ -1,30 +1,71 @@
-// lib/tasksApi.ts
 import { supabase } from "./supabaseClient";
 
-// načtení všech úkolů
+// 🟢 Načtení úkolů jen pro přihlášeného uživatele
 export async function fetchTasks() {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    console.error("❌ Uživatel není přihlášen!");
+    return [];
+  }
+
   const { data, error } = await supabase
     .from("tasks")
     .select("*")
-    .order("created_at", { ascending: false });
-  if (error) throw error;
-  return data;
+    .eq("user_id", user.id) // ✅ jen jeho úkoly
+    .order("id", { ascending: false });
+
+  if (error) {
+    console.error("❌ Chyba při načítání úkolů:", error.message);
+    return [];
+  }
+
+  return data || [];
 }
 
-// přidání úkolu
+// 🟢 Přidání nového úkolu (včetně user_id)
 export async function addTask(text: string) {
-  const { error } = await supabase.from("tasks").insert([{ text, completed: false }]);
-  if (error) throw error;
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    console.error("❌ Uživatel není přihlášen!");
+    return;
+  }
+
+  const { error } = await supabase.from("tasks").insert([
+    {
+      text,
+      completed: false,
+      user_id: user.id, // ✅ přidáme ID aktuálního uživatele
+    },
+  ]);
+
+  if (error) {
+    console.error("❌ Chyba při přidání úkolu:", error.message);
+  }
 }
 
-// označení hotového úkolu
+// 🟢 Přepínání stavu úkolu (hotovo / nehotovo)
 export async function toggleTask(id: string, completed: boolean) {
-  const { error } = await supabase.from("tasks").update({ completed }).eq("id", id);
-  if (error) throw error;
+  const { error } = await supabase
+    .from("tasks")
+    .update({ completed })
+    .eq("id", id);
+
+  if (error) {
+    console.error("❌ Chyba při změně úkolu:", error.message);
+  }
 }
 
-// smazání úkolu
+// 🟢 Smazání úkolu
 export async function deleteTask(id: string) {
   const { error } = await supabase.from("tasks").delete().eq("id", id);
-  if (error) throw error;
+
+  if (error) {
+    console.error("❌ Chyba při mazání úkolu:", error.message);
+  }
 }
