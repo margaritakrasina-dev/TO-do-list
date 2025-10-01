@@ -16,21 +16,27 @@ export default function AuthForm({ type }: AuthFormProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // 🟢 Registrace
     if (type === "register") {
       const { error } = await supabase.auth.signUp({ email, password });
       setMessage(error ? error.message : "✅ Úspěšně zaregistrováno! Zkontroluj email.");
     }
 
+    // 🟢 Přihlášení
     if (type === "login") {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) setMessage(error.message);
       else router.push("/");
     }
 
+    // 🟢 Reset hesla (odeslání emailu)
     if (type === "reset") {
+      const baseUrl = window.location.origin; // 💡 dynamická URL (funguje lokálně i po nasazení)
+
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: "http://localhost:3000/reset-password",
+        redirectTo: `${baseUrl}/update-password`, // 💚 stránka pro nastavení nového hesla
       });
+
       setMessage(error ? error.message : "📩 Zkontroluj svůj email pro obnovení hesla.");
     }
   };
