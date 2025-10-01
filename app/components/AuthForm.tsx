@@ -19,7 +19,11 @@ export default function AuthForm({ type }: AuthFormProps) {
     // 🟢 Registrace
     if (type === "register") {
       const { error } = await supabase.auth.signUp({ email, password });
-      setMessage(error ? error.message : "✅ Úspěšně zaregistrováno! Zkontroluj email.");
+      setMessage(
+        error
+          ? error.message
+          : "✅ Úspěšně zaregistrováno! Zkontroluj svůj email pro potvrzení účtu."
+      );
     }
 
     // 🟢 Přihlášení
@@ -31,25 +35,31 @@ export default function AuthForm({ type }: AuthFormProps) {
 
     // 🟢 Reset hesla (odeslání emailu)
     if (type === "reset") {
-      const baseUrl = window.location.origin; // 💡 dynamická URL (funguje lokálně i po nasazení)
+      const baseUrl = window.location.origin; // 💡 automatická URL (lokální i produkční)
 
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${baseUrl}/update-password`, // 💚 stránka pro nastavení nového hesla
+        redirectTo: `${baseUrl}/update-password#type=recovery`, // 💚 klíčové — hash #type=recovery
       });
 
-      setMessage(error ? error.message : "📩 Zkontroluj svůj email pro obnovení hesla.");
+      setMessage(
+        error
+          ? error.message
+          : "📩 Odesláno! Zkontroluj svůj email pro obnovení hesla."
+      );
     }
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
       <div className="w-full max-w-md bg-white shadow-xl rounded-2xl p-8">
+        {/* Nadpis */}
         <h2 className="text-3xl font-bold text-center text-green-700 mb-6">
           {type === "login" && "Přihlášení"}
           {type === "register" && "Registrace"}
           {type === "reset" && "Obnovení hesla"}
         </h2>
 
+        {/* Formulář */}
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Email */}
           <div>
@@ -64,7 +74,7 @@ export default function AuthForm({ type }: AuthFormProps) {
             />
           </div>
 
-          {/* Heslo (pokud nejde o reset) */}
+          {/* Heslo (zobrazit jen mimo reset) */}
           {type !== "reset" && (
             <div>
               <label className="block text-gray-700 text-sm font-medium mb-1">Heslo</label>
@@ -97,36 +107,50 @@ export default function AuthForm({ type }: AuthFormProps) {
           )}
         </form>
 
-        {/* Odkazy */}
+        {/* Odkazy pod formulářem */}
         <div className="text-center mt-6 text-sm text-gray-600">
           {type === "login" && (
             <>
               <p className="mb-2">
                 Nemáš účet?{" "}
-                <a href="/register" className="text-green-700 font-semibold hover:underline">
+                <a
+                  href="/register"
+                  className="text-green-700 font-semibold hover:underline"
+                >
                   Registruj se
                 </a>
               </p>
               <p>
                 Zapomněl jsi heslo?{" "}
-                <a href="/reset-password" className="text-green-700 font-semibold hover:underline">
+                <a
+                  href="/reset-password"
+                  className="text-green-700 font-semibold hover:underline"
+                >
                   Obnovit heslo
                 </a>
               </p>
             </>
           )}
+
           {type === "register" && (
             <p>
               Už máš účet?{" "}
-              <a href="/login" className="text-green-700 font-semibold hover:underline">
+              <a
+                href="/login"
+                className="text-green-700 font-semibold hover:underline"
+              >
                 Přihlaš se
               </a>
             </p>
           )}
+
           {type === "reset" && (
             <p>
               Zpět na{" "}
-              <a href="/login" className="text-green-700 font-semibold hover:underline">
+              <a
+                href="/login"
+                className="text-green-700 font-semibold hover:underline"
+              >
                 přihlášení
               </a>
             </p>
