@@ -1,4 +1,5 @@
 "use client";
+
 import React, { useState } from "react";
 import { supabase } from "../lib/supabaseClient";
 import { useRouter } from "next/navigation";
@@ -13,37 +14,38 @@ export default function AuthForm({ type }: AuthFormProps) {
   const [message, setMessage] = useState("");
   const router = useRouter();
 
+  // 🧩 Odeslání formuláře
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // 🟢 Registrace
+    // 🔹 Registrace
     if (type === "register") {
       const { error } = await supabase.auth.signUp({ email, password });
       setMessage(
         error
-          ? error.message
+          ? `❌ ${error.message}`
           : "✅ Úspěšně zaregistrováno! Zkontroluj svůj email pro potvrzení účtu."
       );
     }
 
-    // 🟢 Přihlášení
+    // 🔹 Přihlášení
     if (type === "login") {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) setMessage(error.message);
+      if (error) setMessage(`❌ ${error.message}`);
       else router.push("/");
     }
 
-    // 🟢 Reset hesla (odeslání emailu)
+    // 🔹 Reset hesla (zaslání emailu)
     if (type === "reset") {
-      const baseUrl = window.location.origin; // 💡 automatická URL (lokální i produkční)
+      const baseUrl = window.location.origin; // funguje lokálně i v produkci
 
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${baseUrl}/update-password#type=recovery`, // 💚 klíčové — hash #type=recovery
+        redirectTo: `${baseUrl}/update-password#type=recovery`, // ⚡ důležité pro Supabase reset
       });
 
       setMessage(
         error
-          ? error.message
+          ? `❌ ${error.message}`
           : "📩 Odesláno! Zkontroluj svůj email pro obnovení hesla."
       );
     }
@@ -52,18 +54,20 @@ export default function AuthForm({ type }: AuthFormProps) {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
       <div className="w-full max-w-md bg-white shadow-xl rounded-2xl p-8">
-        {/* Nadpis */}
+        {/* 🟢 Nadpis */}
         <h2 className="text-3xl font-bold text-center text-green-700 mb-6">
           {type === "login" && "Přihlášení"}
           {type === "register" && "Registrace"}
           {type === "reset" && "Obnovení hesla"}
         </h2>
 
-        {/* Formulář */}
+        {/* 🧾 Formulář */}
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Email */}
           <div>
-            <label className="block text-gray-700 text-sm font-medium mb-1">Email</label>
+            <label className="block text-gray-700 text-sm font-medium mb-1">
+              Email
+            </label>
             <input
               type="email"
               placeholder="Zadej svůj email"
@@ -74,10 +78,12 @@ export default function AuthForm({ type }: AuthFormProps) {
             />
           </div>
 
-          {/* Heslo (zobrazit jen mimo reset) */}
+          {/* Heslo (jen mimo reset) */}
           {type !== "reset" && (
             <div>
-              <label className="block text-gray-700 text-sm font-medium mb-1">Heslo</label>
+              <label className="block text-gray-700 text-sm font-medium mb-1">
+                Heslo
+              </label>
               <input
                 type="password"
                 placeholder="Zadej své heslo"
@@ -99,7 +105,7 @@ export default function AuthForm({ type }: AuthFormProps) {
             {type === "reset" && "Odeslat email"}
           </button>
 
-          {/* Zpráva */}
+          {/* 💬 Zpráva uživateli */}
           {message && (
             <p className="text-center text-sm text-gray-700 mt-3 bg-gray-100 py-2 rounded">
               {message}
@@ -107,7 +113,7 @@ export default function AuthForm({ type }: AuthFormProps) {
           )}
         </form>
 
-        {/* Odkazy pod formulářem */}
+        {/* 🔗 Navigační odkazy */}
         <div className="text-center mt-6 text-sm text-gray-600">
           {type === "login" && (
             <>
